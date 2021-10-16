@@ -2,4 +2,4 @@ language: java
 jdk:
   - openjdk10
 
-script: ant Sudoku
+script: ant build
