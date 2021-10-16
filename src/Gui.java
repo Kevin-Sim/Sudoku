@@ -15,6 +15,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.Random;
+
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
@@ -23,8 +27,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.border.EmptyBorder;
+import javax.swing.plaf.basic.BasicBorders.RadioButtonBorder;
 
-public class Gui extends JFrame {
+public class Gui extends JFrame implements Observer{
 
 	private JPanel contentPane;
 	private JLabel lblUnfilled;
@@ -33,6 +38,7 @@ public class Gui extends JFrame {
 	private JButton btnUndo;
 	private boolean drawPecilMarks = false;
 	protected boolean showSingleOccupancy = false;
+	Celebrate celebtrate = null;
 
 	/**
 	 * Launch the application.
@@ -99,7 +105,7 @@ public class Gui extends JFrame {
 							}
 							g2.drawString("" + SudokuChecker.board[row][col], x, y);
 							g2.setColor(Color.BLACK);
-						} else {							
+						} else {
 							if (drawPecilMarks) {
 								HashSet<Integer> possibleValues = SudokuChecker.getPossibleValues(row, col,
 										SudokuChecker.board);
@@ -234,9 +240,35 @@ public class Gui extends JFrame {
 				}
 				lblUnfilled.setText("" + count);
 				if (count == 0 && SudokuChecker.isValid(SudokuChecker.board)) {
+					if(celebtrate == null) {
+						celebtrate = new Celebrate();
+						celebtrate.addObserver(Gui.this);
+						Thread t = new Thread(celebtrate);
+						t.start();
+					}
 					lblUnfilled.setBackground(Color.GREEN);
 					lblUnfilled.setOpaque(true);
-					Gui.this.repaint();
+					Random rnd = new Random();
+					for (int row = 0; row < 9; row++) {
+						for (int col = 0; col < 9; col++) {
+							g2.setColor(new Color(rnd.nextInt(255), rnd.nextInt(255), rnd.nextInt(255), 128));
+							g2.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+						}
+					}
+
+				} else if (count == 0 && !SudokuChecker.isValid(SudokuChecker.board)) {
+					lblUnfilled.setBackground(Color.RED);
+					lblUnfilled.setOpaque(true);
+					for (int row = 0; row < 9; row++) {
+						for (int col = 0; col < 9; col++) {
+							if (SudokuChecker.getConflicts(row, col, SudokuChecker.board) > 0) {
+								g2.setColor(new Color(255, 0, 0, 128));
+								g2.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+							}
+						}
+					}
+				} else {
+					lblUnfilled.setBackground(Color.LIGHT_GRAY);
 				}
 				if (SudokuChecker.history.size() > 0) {
 					btnUndo.setEnabled(true);
@@ -437,11 +469,11 @@ public class Gui extends JFrame {
 				for (int i = 0; i < getSlider().getValue(); i++) {
 					int r = Parameters.rnd.nextInt(9);
 					int c = Parameters.rnd.nextInt(9);
-					SudokuChecker.board[r][c] = 0;
-					highlightValue = 0;
-					lblUnfilled.setBackground(Color.LIGHT_GRAY);
-					repaint();
+					SudokuChecker.board[r][c] = 0;					
 				}
+				highlightValue = 0;
+				celebtrate = null;
+				repaint();
 			}
 		});
 		controlPanel.add(btnGenNew);
@@ -484,6 +516,7 @@ public class Gui extends JFrame {
 					board = SudokuChecker.load(file.getAbsolutePath());
 					SudokuChecker.board = board;
 					highlightValue = 0;
+					celebtrate = null;
 					lblUnfilled.setBackground(Color.LIGHT_GRAY);
 					repaint();
 				}
@@ -533,5 +566,32 @@ public class Gui extends JFrame {
 
 	public JButton getBtnUndo() {
 		return btnUndo;
+	}
+
+	@Override
+	public void update(Observable o, Object arg) {
+		repaint();
+	}
+	
+	class Celebrate extends Observable implements Runnable{
+
+		public boolean running = false; 
+		@Override
+		public void run() {
+			running = true;
+			for(int i = 0; i < 200; i++) {
+				try {
+					Thread.sleep(10);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				setChanged();
+				notifyObservers(this);
+			}
+			running = false;
+			setChanged();
+			notifyObservers(this);			
+		}		
 	}
 }
