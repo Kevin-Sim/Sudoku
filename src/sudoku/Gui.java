@@ -1,3 +1,5 @@
+package sudoku;
+
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -9,12 +11,13 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Random;
@@ -27,7 +30,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.border.EmptyBorder;
-import javax.swing.plaf.basic.BasicBorders.RadioButtonBorder;
+
+import ea.Parameters;
 
 public class Gui extends JFrame implements Observer{
 
@@ -37,8 +41,9 @@ public class Gui extends JFrame implements Observer{
 	private JSlider slider;
 	private JButton btnUndo;
 	private boolean drawPecilMarks = false;
-	protected boolean showSingleOccupancy = false;
-	Celebrate celebtrate = null;
+	private boolean showSingleOccupancy = false;
+	private Celebrate celebtrate = null;
+	
 
 	/**
 	 * Launch the application.
@@ -74,7 +79,7 @@ public class Gui extends JFrame implements Observer{
 			public void paint(Graphics g) {
 				super.paint(g);
 				Graphics2D g2 = (Graphics2D) g;
-				g2.setFont(new Font("TimesRoman", Font.PLAIN, 30));
+				g2.setFont(Settings.font);
 
 				if (SudokuChecker.board == null) {
 					return;
@@ -86,6 +91,7 @@ public class Gui extends JFrame implements Observer{
 					} else {
 						g2.setStroke(new BasicStroke(1));
 					}
+					g2.setColor(Settings.gridColor);
 					g2.drawLine(0, row * cellSize, cellSize * 9, row * cellSize);
 					for (int col = 0; col < 9; col++) {
 						if (row == 0) {
@@ -94,23 +100,24 @@ public class Gui extends JFrame implements Observer{
 							} else {
 								g2.setStroke(new BasicStroke(1));
 							}
+							g2.setColor(Settings.gridColor);
 							g2.drawLine(col * cellSize, 0, col * cellSize, cellSize * 9);
 						}
 						int x = cellSize / 2 - 10 + col * cellSize;
 						int y = (cellSize * 3) / 4 - 10 + row * cellSize;
 						if (SudokuChecker.board[row][col] != 0) {
-							g2.setColor(Color.BLACK);
+							g2.setColor(Settings.foreColor);
+							g2.setFont(Settings.font);
 							if (SudokuChecker.board[row][col] == highlightValue) {
 								g2.setColor(Color.RED);
 							}
-							g2.drawString("" + SudokuChecker.board[row][col], x, y);
-							g2.setColor(Color.BLACK);
+							g2.drawString("" + SudokuChecker.board[row][col], x, y);							
 						} else {
 							if (drawPecilMarks) {
 								HashSet<Integer> possibleValues = SudokuChecker.getPossibleValues(row, col,
 										SudokuChecker.board);
-								g2.setColor(Color.GREEN);
-								g2.setFont(new Font("TimesRoman", Font.PLAIN, 16));
+								g2.setColor(Color.GREEN);									
+								g2.setFont(g2.getFont().deriveFont((float) 16.0));								
 								for (int i = 1; i <= 9; i++) {
 									if (possibleValues.contains(i)) {
 										int x2 = col * cellSize + 10 + ((i - 1) % 3) * (cellSize - 10) / 3;
@@ -118,8 +125,7 @@ public class Gui extends JFrame implements Observer{
 										g2.drawString("" + i, x2, y2);
 									}
 								}
-								g2.setFont(new Font("TimesRoman", Font.PLAIN, 30));
-								g2.setColor(Color.BLACK);
+								g2.setFont(Settings.font);								
 							}
 
 						}
@@ -129,7 +135,7 @@ public class Gui extends JFrame implements Observer{
 							// do each row only once for col 8 overwrite green pencil
 							HashMap<Integer, ArrayList<Point>> map = new HashMap<>();
 							g2.setColor(Color.RED);
-							g2.setFont(new Font("TimesRoman", Font.PLAIN, 16));
+							g2.setFont(g2.getFont().deriveFont((float) 16.0));
 							for (int col1 = 0; col1 < 9; col1++) {
 								if (SudokuChecker.board[row][col1] == 0) {
 									HashSet<Integer> possibleValues1 = SudokuChecker.getPossibleValues(row, col1,
@@ -149,11 +155,10 @@ public class Gui extends JFrame implements Observer{
 									Point p = map.get(key).get(0);
 									int x2 = p.x * cellSize + 10 + ((key - 1) % 3) * (cellSize - 10) / 3;
 									int y2 = row * cellSize + (1 + (key - 1) / 3) * (cellSize - 10) / 3;
-									g2.drawString("" + key, x2 - 5, y2 - 5);
+									g2.drawString("" + key, x2, y2);
 								}
 							}
-							g2.setColor(Color.BLACK);
-							g2.setFont(new Font("TimesRoman", Font.PLAIN, 30));
+							
 							// cols
 						}
 						// show single occupancy in columns (number only appears as pencil mark in one
@@ -161,8 +166,8 @@ public class Gui extends JFrame implements Observer{
 						if (showSingleOccupancy && row == 8) {
 							// do each col only once for row 8 overwrite green pencil
 							HashMap<Integer, ArrayList<Point>> map = new HashMap<>();
-							g2.setColor(Color.BLUE);
-							g2.setFont(new Font("TimesRoman", Font.PLAIN, 16));
+							g2.setColor(Color.RED);
+							g2.setFont(g2.getFont().deriveFont((float) 16.0));
 							for (int row1 = 0; row1 < 9; row1++) {
 								if (SudokuChecker.board[row1][col] == 0) {
 									HashSet<Integer> possibleValues1 = SudokuChecker.getPossibleValues(row1, col,
@@ -184,9 +189,7 @@ public class Gui extends JFrame implements Observer{
 									int y2 = p.y * cellSize + (1 + (key - 1) / 3) * (cellSize - 10) / 3;
 									g2.drawString("" + key, x2, y2);
 								}
-							}
-							g2.setColor(Color.BLACK);
-							g2.setFont(new Font("TimesRoman", Font.PLAIN, 30));
+							}							
 
 						}
 
@@ -195,8 +198,8 @@ public class Gui extends JFrame implements Observer{
 						if (showSingleOccupancy && (row + 1) % 3 == 0 & (col + 1) % 3 == 0) {
 							// do each block only once for bottom right cell of block
 							HashMap<Integer, ArrayList<Point>> map = new HashMap<>();
-							g2.setColor(Color.MAGENTA);
-							g2.setFont(new Font("TimesRoman", Font.PLAIN, 16));
+							g2.setColor(Color.RED);
+							g2.setFont(g2.getFont().deriveFont((float) 16.0));
 							for (int row1 = row - 2; row1 <= row; row1++) {
 								for (int col1 = col - 2; col1 <= col; col1++) {
 									if (SudokuChecker.board[row1][col1] == 0) {
@@ -218,16 +221,14 @@ public class Gui extends JFrame implements Observer{
 									Point p = map.get(key).get(0);
 									int x2 = p.x * cellSize + 10 + ((key - 1) % 3) * (cellSize - 10) / 3;
 									int y2 = p.y * cellSize + (1 + (key - 1) / 3) * (cellSize - 10) / 3;
-									g2.drawString("" + key, x2 + 5, y2 + 5);
+									g2.drawString("" + key, x2, y2);
 								}
-							}
-							g2.setColor(Color.BLACK);
-							g2.setFont(new Font("TimesRoman", Font.PLAIN, 30));
-
+							}						
 						}
 					}
 				}
 				g2.setStroke(new BasicStroke(3));
+				g2.setColor(Settings.gridColor);
 				g2.drawLine(0, cellSize * 9, cellSize * 9, cellSize * 9);
 				g2.drawLine(cellSize * 9, 0, cellSize * 9, cellSize * 9);
 				int count = 0;
@@ -278,32 +279,7 @@ public class Gui extends JFrame implements Observer{
 			}
 		};
 
-		sudokuPanel.addMouseListener(new MouseListener() {
-
-			@Override
-			public void mouseReleased(MouseEvent e) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void mousePressed(MouseEvent e) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void mouseExited(MouseEvent e) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void mouseEntered(MouseEvent e) {
-				// TODO Auto-generated method stub
-
-			}
-
+		sudokuPanel.addMouseListener(new MouseAdapter() {			
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				int col = e.getX() / cellSize;
@@ -318,7 +294,11 @@ public class Gui extends JFrame implements Observer{
 				System.out.println("Row " + row + " Column " + col);
 				if (row >= 0 && row < 9 && col >= 0 && col < 9) {
 					if (SudokuChecker.board[row][col] != 0) {
-						highlightValue = SudokuChecker.board[row][col];
+						if(SudokuChecker.board[row][col] == highlightValue) {
+							highlightValue = 0;
+						}else {
+							highlightValue = SudokuChecker.board[row][col];
+						}
 					} else {
 						HashSet<Integer> possibleValues = SudokuChecker.getPossibleValues(row, col,
 								SudokuChecker.board);
@@ -348,6 +328,7 @@ public class Gui extends JFrame implements Observer{
 		contentPane.add(controlPanel, BorderLayout.WEST);
 
 		JButton btnFillSingles = new JButton("fill singles");
+		btnFillSingles.setPreferredSize(new Dimension(100, 32));
 		btnFillSingles.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				boolean changed = false;
@@ -462,6 +443,7 @@ public class Gui extends JFrame implements Observer{
 		controlPanel.add(btnFillSingles);
 
 		JButton btnGenNew = new JButton("genNew");
+		btnGenNew.setPreferredSize(new Dimension(100, 32));
 		btnGenNew.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				SudokuChecker.board = SudokuChecker.generateValidBoard();
@@ -479,17 +461,24 @@ public class Gui extends JFrame implements Observer{
 		controlPanel.add(btnGenNew);
 
 		slider = new JSlider();
-		slider.setValue(65);
+		slider.setValue(50);
 		slider.setPreferredSize(new Dimension(100, 50));
 		slider.setMaximum(100);
 		slider.setMinimum(10);
+		Hashtable<Integer, JLabel> table = new Hashtable<Integer, JLabel>();	    
+	    table.put (10, new JLabel("Easy"));	 
+	    table.put (50, new JLabel("Med"));
+	    table.put (90, new JLabel("Hard"));
+	    slider.setLabelTable (table);
+	    slider.setPaintLabels(true);
 		controlPanel.add(slider);
 
 		lblUnfilled = new JLabel("unfilled");
-		lblUnfilled.setPreferredSize(new Dimension(100, 50));
+		lblUnfilled.setPreferredSize(new Dimension(100, 32));
 		controlPanel.add(lblUnfilled);
 
 		JButton btnSave = new JButton("Save");
+		btnSave.setPreferredSize(new Dimension(100, 32));
 		btnSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser fileChooser = new JFileChooser();
@@ -504,6 +493,7 @@ public class Gui extends JFrame implements Observer{
 		controlPanel.add(btnSave);
 
 		JButton btnLoad = new JButton("Load");
+		btnLoad.setPreferredSize(new Dimension(100, 32));
 		btnLoad.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int[][] board = new int[9][9];
@@ -525,6 +515,7 @@ public class Gui extends JFrame implements Observer{
 		controlPanel.add(btnLoad);
 
 		btnUndo = new JButton("Undo");
+		btnUndo.setPreferredSize(new Dimension(100, 32));
 		btnUndo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				SudokuChecker.undo();
@@ -534,7 +525,7 @@ public class Gui extends JFrame implements Observer{
 		controlPanel.add(btnUndo);
 
 		JCheckBox chckbxNewCheckBox = new JCheckBox("Pencil Marks");
-		chckbxNewCheckBox.setPreferredSize(new Dimension(100, 50));
+		chckbxNewCheckBox.setPreferredSize(new Dimension(100, 32));
 		chckbxNewCheckBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				drawPecilMarks = chckbxNewCheckBox.isSelected();
@@ -551,8 +542,19 @@ public class Gui extends JFrame implements Observer{
 				Gui.this.repaint();
 			}
 		});
-		checkBox.setPreferredSize(new Dimension(100, 50));
+		checkBox.setPreferredSize(new Dimension(100, 32));
 		controlPanel.add(checkBox);
+		
+		JButton btnSettings = new JButton("Settings");
+		btnSettings.setPreferredSize(new Dimension(100, 32));
+		btnSettings.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				new Settings(Gui.this);
+				sudokuPanel.setBackground(Settings.backColor);
+				Gui.this.repaint();
+			}
+		});
+		controlPanel.add(btnSettings);
 
 	}
 

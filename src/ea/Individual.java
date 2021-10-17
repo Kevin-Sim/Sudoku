@@ -1,4 +1,7 @@
+package ea;
 import java.util.Random;
+
+import sudoku.SudokuChecker;
 
 public class Individual {
 

@@ -1,3 +1,4 @@
+package ea;
 import java.util.Random;
 
 public class Parameters {

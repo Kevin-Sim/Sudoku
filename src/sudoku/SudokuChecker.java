@@ -1,3 +1,4 @@
+package sudoku;
 import java.awt.Point;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -13,6 +14,8 @@ import java.util.LinkedList;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+
+import ea.Parameters;
 
 public class SudokuChecker {
 

@@ -64,5 +64,5 @@
         <java classname="SudokuChecker" failonerror="true" fork="yes">
             <classpath refid="Sudoku.classpath"/>
         </java>
-    </target>
+    </target>    
 </project>

@@ -1,5 +1,9 @@
+package ea;
 import java.util.ArrayList;
 import java.util.Random;
+
+import sudoku.Gui;
+import sudoku.SudokuChecker;
 
 public class EA {
 
