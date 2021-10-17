@@ -36,12 +36,12 @@
     </target>
     <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
     <target name="EA">
-        <java classname="EA" failonerror="true" fork="yes">
+        <java classname="ea.EA" failonerror="true" fork="yes">
             <classpath refid="Sudoku.classpath"/>
         </java>
     </target>
     <target name="Gui (1)">
-        <java classname="Gui" failonerror="true" fork="yes">
+        <java classname="sudoku.Gui" failonerror="true" fork="yes">
             <classpath refid="Sudoku.classpath"/>
         </java>
     </target>
@@ -56,13 +56,18 @@
         </java>
     </target>
     <target name="NumberChooserPanel">
-        <java classname="NumberChooserPanel" failonerror="true" fork="yes">
+        <java classname="sudoku.NumberChooserPanel" failonerror="true" fork="yes">
+            <classpath refid="Sudoku.classpath"/>
+        </java>
+    </target>
+    <target name="Settings">
+        <java classname="sudoku.Settings" failonerror="true" fork="yes">
             <classpath refid="Sudoku.classpath"/>
         </java>
     </target>
     <target name="SudokuChecker">
-        <java classname="SudokuChecker" failonerror="true" fork="yes">
+        <java classname="sudoku.SudokuChecker" failonerror="true" fork="yes">
             <classpath refid="Sudoku.classpath"/>
         </java>
-    </target>    
+    </target>
 </project>

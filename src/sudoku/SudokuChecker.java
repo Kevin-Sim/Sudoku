@@ -9,6 +9,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
@@ -30,40 +31,60 @@ public class SudokuChecker {
 	public static int[][] board = new int[9][9];
 	public static LinkedList<int[][]> history = new LinkedList<>();
 	public static void main(String[] args) {
-		System.out.println(isValid(board));
+//		System.out.println(isValid(board));
+//
+//		for (int row = 0; row < 9; row++) {
+//			for (int col = 0; col < 9; col++) {
+//				HashSet<Integer> possibleValues = getPossibleValues(row, col, board);
+//				System.out.print("Possible for " + row + ", " + col + "\t");
+//				for (int i : possibleValues) {
+//					System.out.print(i + ", ");
+//				}
+//				System.out.println();
+//			}
+//		}		
+		
+		int target = 20;
 
-		for (int row = 0; row < 9; row++) {
-			for (int col = 0; col < 9; col++) {
-				HashSet<Integer> possibleValues = getPossibleValues(row, col, board);
-				System.out.print("Possible for " + row + ", " + col + "\t");
-				for (int i : possibleValues) {
-					System.out.print(i + ", ");
-				}
-				System.out.println();
-			}
-		}
-
-		board = generateValidBoard();
-		System.out.println(isValid(board));
-
-		for (int i = 0; i < 40; i++) {
-			int r = Parameters.rnd.nextInt(9);
-			int c = Parameters.rnd.nextInt(9);
-			board[r][c] = 0;
-		}		
-
-		for (int i = 1; i < 100; i++) {
+		for (int i = 100; i < 1000; i++) {
 			board = generateValidBoard();
-			for (int j = 0; j < 60; j++) {
-				int r = Parameters.rnd.nextInt(9);
-				int c = Parameters.rnd.nextInt(9);
+			int bestUnfilledCells = 0;
+			int attemptsWithNoImprov = 0;			
+			while(getUnfilledCells(board) < 81 - target && attemptsWithNoImprov < 5000) {	
+				if(getUnfilledCells(board) > bestUnfilledCells) {
+					bestUnfilledCells = getUnfilledCells(board);
+					//System.out.println(i + "\t" + bestUnfilledCells);
+				}
+				//System.out.println(i + "\t" + bestUnfilledCells + "\t" + attemptsWithNoImprov);
+				int r = 0;
+				int c = 0;
+				int val = 0;
+				while(val == 0) {
+					r = Parameters.rnd.nextInt(9);
+					c = Parameters.rnd.nextInt(9);
+					val = board[r][c];
+				}				
 				board[r][c] = 0;
+				int cellsWithoutGuesses = attemptToSolve();
+				if(cellsWithoutGuesses != 0) {
+					board[r][c] = val;
+					attemptsWithNoImprov++;
+//					board = fillSingles(board);
+				}else {
+					attemptsWithNoImprov = 0;
+				}
+				
 			}
-			DecimalFormat format = new DecimalFormat("0000");
-			save("" + format.format(i) + ".sud");
+			int cellsWithoutGuesses = attemptToSolve();
+			System.out.println(i + "\t" + (81 - getUnfilledCells(board)) + "\tTarget " + target);
+			if(cellsWithoutGuesses == 0 && getUnfilledCells(board) <= 21) {
+				DecimalFormat format = new DecimalFormat("0000");
+				save("" + format.format(i) + "_" + (getUnfilledCells(board)) + ".sud");
+				System.out.println("Found");
+			}			
 		}
 		Gui.main(null);
-		JOptionPane.showMessageDialog(null,"Finished");
+		
 	}
 
 	public static boolean isValid(int[][] board) {
@@ -391,5 +412,144 @@ public class SudokuChecker {
 			}
 		}
 		history.addFirst(historyItem);
+	}
+	
+	public static int[][] fillSingles(int[][] board) {
+		boolean changed = false;
+		int[][] newBoard = new int[9][9];
+		for (int row = 0; row < 9; row++) {
+			for (int col = 0; col < 9; col++) {
+				if (board[row][col] != 0) {
+					newBoard[row][col] = board[row][col];
+				} else {
+					HashSet<Integer> possibleValues = SudokuChecker.getPossibleValues(row, col,
+							board);
+					if (possibleValues.size() == 1) {
+						changed = true;
+						newBoard[row][col] = (int) possibleValues.toArray()[0];
+					}
+				}
+			}
+		}
+
+		// single occupancy rows
+		for (int row = 0; row < 9; row++) {
+			HashMap<Integer, ArrayList<Point>> map = new HashMap<>();
+			for (int col = 0; col < 9; col++) {
+				if (board[row][col] == 0) {
+					HashSet<Integer> possibleValues1 = SudokuChecker.getPossibleValues(row, col,
+							board);
+					for (int i : possibleValues1) {
+						ArrayList<Point> points = new ArrayList<>();
+						if (map.containsKey(i)) {
+							points = map.get(i);
+						}
+						points.add(new Point(col, row));
+						map.put(i, points);
+					}
+				}
+			}
+			for (int key : map.keySet()) {
+				if (map.get(key).size() == 1) {
+					Point p = map.get(key).get(0);
+					newBoard[p.y][p.x] = key;
+					changed = true;
+				}
+			}
+		}
+		// single occupancy in columns
+		for (int col = 0; col < 9; col++) {
+			HashMap<Integer, ArrayList<Point>> map = new HashMap<>();
+			for (int row = 0; row < 9; row++) {
+				if (board[row][col] == 0) {
+					HashSet<Integer> possibleValues1 = SudokuChecker.getPossibleValues(row, col,
+							board);
+					for (int i : possibleValues1) {
+						ArrayList<Point> points = new ArrayList<>();
+						if (map.containsKey(i)) {
+							points = map.get(i);
+						}
+						points.add(new Point(col, row));
+						map.put(i, points);
+					}
+				}
+			}
+			for (int key : map.keySet()) {
+				if (map.get(key).size() == 1) {
+					Point p = map.get(key).get(0);
+					newBoard[p.y][p.x] = key;
+					changed = true;
+				}
+			}
+
+		}
+
+		// single occupancy in Blocks
+		for (int row = 2; row < 9; row += 3) {
+			for (int col = 2; col < 9; col += 3) {
+
+				// do each block only once for bottom right cell of block
+				HashMap<Integer, ArrayList<Point>> map = new HashMap<>();
+				for (int row1 = row - 2; row1 <= row; row1++) {
+					for (int col1 = col - 2; col1 <= col; col1++) {
+						if (board[row1][col1] == 0) {
+							HashSet<Integer> possibleValues1 = SudokuChecker.getPossibleValues(row1, col1,
+									board);
+							for (int i : possibleValues1) {
+								ArrayList<Point> points = new ArrayList<>();
+								if (map.containsKey(i)) {
+									points = map.get(i);
+								}
+								points.add(new Point(col1, row1));
+								map.put(i, points);
+							}
+						}
+					}
+				}
+				for (int key : map.keySet()) {
+					if (map.get(key).size() == 1) {
+						Point p = map.get(key).get(0);
+						newBoard[p.y][p.x] = key;
+						changed = true;
+					}
+				}
+			}
+		}
+//		System.out.println(changed);
+		return newBoard;
+	}
+	
+	public static int attemptToSolve() {
+		
+		int[][] newBoard = new int[9][9];
+		for (int row = 0; row < 9; row++) {
+			for (int col = 0; col < 9; col++) {
+				newBoard[row][col] = board[row][col];
+			}
+		}
+		int unfilled = getUnfilledCells(newBoard);
+		boolean improved = true;
+		while(improved) {
+			int[][] candidateBoard = fillSingles(newBoard);
+			if(getUnfilledCells(candidateBoard) < unfilled) {
+				unfilled = getUnfilledCells(newBoard);
+				newBoard = candidateBoard;
+			}else {
+				improved = false;
+			}
+		}
+		return unfilled;
+	}
+	
+	public static int getUnfilledCells(int[][] board) {
+		int result = 0;
+		for (int row = 0; row < 9; row++) {
+			for (int col = 0; col < 9; col++) {
+				if(board[row][col] == 0) {
+					result++;
+				}
+			}
+		}
+		return result;
 	}
 }

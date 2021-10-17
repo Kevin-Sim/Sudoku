@@ -33,7 +33,7 @@ import javax.swing.border.EmptyBorder;
 
 import ea.Parameters;
 
-public class Gui extends JFrame implements Observer{
+public class Gui extends JFrame implements Observer {
 
 	private JPanel contentPane;
 	private JLabel lblUnfilled;
@@ -43,7 +43,7 @@ public class Gui extends JFrame implements Observer{
 	private boolean drawPecilMarks = false;
 	private boolean showSingleOccupancy = false;
 	private Celebrate celebtrate = null;
-	
+	protected boolean showErrors = false;
 
 	/**
 	 * Launch the application.
@@ -111,13 +111,13 @@ public class Gui extends JFrame implements Observer{
 							if (SudokuChecker.board[row][col] == highlightValue) {
 								g2.setColor(Color.RED);
 							}
-							g2.drawString("" + SudokuChecker.board[row][col], x, y);							
+							g2.drawString("" + SudokuChecker.board[row][col], x, y);
 						} else {
 							if (drawPecilMarks) {
 								HashSet<Integer> possibleValues = SudokuChecker.getPossibleValues(row, col,
 										SudokuChecker.board);
-								g2.setColor(Color.GREEN);									
-								g2.setFont(g2.getFont().deriveFont((float) 16.0));								
+								g2.setColor(Color.GREEN);
+								g2.setFont(g2.getFont().deriveFont((float) 16.0));
 								for (int i = 1; i <= 9; i++) {
 									if (possibleValues.contains(i)) {
 										int x2 = col * cellSize + 10 + ((i - 1) % 3) * (cellSize - 10) / 3;
@@ -125,7 +125,7 @@ public class Gui extends JFrame implements Observer{
 										g2.drawString("" + i, x2, y2);
 									}
 								}
-								g2.setFont(Settings.font);								
+								g2.setFont(Settings.font);
 							}
 
 						}
@@ -158,7 +158,7 @@ public class Gui extends JFrame implements Observer{
 									g2.drawString("" + key, x2, y2);
 								}
 							}
-							
+
 							// cols
 						}
 						// show single occupancy in columns (number only appears as pencil mark in one
@@ -189,7 +189,7 @@ public class Gui extends JFrame implements Observer{
 									int y2 = p.y * cellSize + (1 + (key - 1) / 3) * (cellSize - 10) / 3;
 									g2.drawString("" + key, x2, y2);
 								}
-							}							
+							}
 
 						}
 
@@ -223,7 +223,18 @@ public class Gui extends JFrame implements Observer{
 									int y2 = p.y * cellSize + (1 + (key - 1) / 3) * (cellSize - 10) / 3;
 									g2.drawString("" + key, x2, y2);
 								}
-							}						
+							}
+						}
+					}
+
+				}
+				if (showErrors) {
+					for (int r = 0; r < 9; r++) {
+						for (int c = 0; c < 9; c++) {
+							if (SudokuChecker.getConflicts(r, c, SudokuChecker.board) > 0) {
+								g2.setColor(new Color(255, 0, 0, 64));
+								g2.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+							}
 						}
 					}
 				}
@@ -241,7 +252,7 @@ public class Gui extends JFrame implements Observer{
 				}
 				lblUnfilled.setText("" + count);
 				if (count == 0 && SudokuChecker.isValid(SudokuChecker.board)) {
-					if(celebtrate == null) {
+					if (celebtrate == null) {
 						celebtrate = new Celebrate();
 						celebtrate.addObserver(Gui.this);
 						Thread t = new Thread(celebtrate);
@@ -279,12 +290,11 @@ public class Gui extends JFrame implements Observer{
 			}
 		};
 
-		sudokuPanel.addMouseListener(new MouseAdapter() {			
+		sudokuPanel.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				int col = e.getX() / cellSize;
-				int row = e.getY() / cellSize;
-				int button = e.getButton();
+				int row = e.getY() / cellSize;				
 				if (e.getButton() == 3) {
 					SudokuChecker.addToHistory();
 					SudokuChecker.board[row][col] = 0;
@@ -294,9 +304,9 @@ public class Gui extends JFrame implements Observer{
 				System.out.println("Row " + row + " Column " + col);
 				if (row >= 0 && row < 9 && col >= 0 && col < 9) {
 					if (SudokuChecker.board[row][col] != 0) {
-						if(SudokuChecker.board[row][col] == highlightValue) {
+						if (SudokuChecker.board[row][col] == highlightValue) {
 							highlightValue = 0;
-						}else {
+						} else {
 							highlightValue = SudokuChecker.board[row][col];
 						}
 					} else {
@@ -451,7 +461,7 @@ public class Gui extends JFrame implements Observer{
 				for (int i = 0; i < getSlider().getValue(); i++) {
 					int r = Parameters.rnd.nextInt(9);
 					int c = Parameters.rnd.nextInt(9);
-					SudokuChecker.board[r][c] = 0;					
+					SudokuChecker.board[r][c] = 0;
 				}
 				highlightValue = 0;
 				celebtrate = null;
@@ -465,12 +475,12 @@ public class Gui extends JFrame implements Observer{
 		slider.setPreferredSize(new Dimension(100, 50));
 		slider.setMaximum(100);
 		slider.setMinimum(10);
-		Hashtable<Integer, JLabel> table = new Hashtable<Integer, JLabel>();	    
-	    table.put (10, new JLabel("Easy"));	 
-	    table.put (50, new JLabel("Med"));
-	    table.put (90, new JLabel("Hard"));
-	    slider.setLabelTable (table);
-	    slider.setPaintLabels(true);
+		Hashtable<Integer, JLabel> table = new Hashtable<Integer, JLabel>();
+		table.put(10, new JLabel("Easy"));
+		table.put(50, new JLabel("Med"));
+		table.put(90, new JLabel("Hard"));
+		slider.setLabelTable(table);
+		slider.setPaintLabels(true);
 		controlPanel.add(slider);
 
 		lblUnfilled = new JLabel("unfilled");
@@ -544,7 +554,7 @@ public class Gui extends JFrame implements Observer{
 		});
 		checkBox.setPreferredSize(new Dimension(100, 32));
 		controlPanel.add(checkBox);
-		
+
 		JButton btnSettings = new JButton("Settings");
 		btnSettings.setPreferredSize(new Dimension(100, 32));
 		btnSettings.addActionListener(new ActionListener() {
@@ -555,6 +565,16 @@ public class Gui extends JFrame implements Observer{
 			}
 		});
 		controlPanel.add(btnSettings);
+
+		JCheckBox chckbxErrors = new JCheckBox("Errors");
+		chckbxErrors.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				showErrors = chckbxErrors.isSelected();
+				Gui.this.repaint();
+			}
+		});
+		chckbxErrors.setPreferredSize(new Dimension(100, 32));
+		controlPanel.add(chckbxErrors);
 
 	}
 
@@ -574,14 +594,15 @@ public class Gui extends JFrame implements Observer{
 	public void update(Observable o, Object arg) {
 		repaint();
 	}
-	
-	class Celebrate extends Observable implements Runnable{
 
-		public boolean running = false; 
+	class Celebrate extends Observable implements Runnable {
+
+		public boolean running = false;
+
 		@Override
 		public void run() {
 			running = true;
-			for(int i = 0; i < 200; i++) {
+			for (int i = 0; i < 200; i++) {
 				try {
 					Thread.sleep(10);
 				} catch (InterruptedException e) {
@@ -593,7 +614,7 @@ public class Gui extends JFrame implements Observer{
 			}
 			running = false;
 			setChanged();
-			notifyObservers(this);			
-		}		
+			notifyObservers(this);
+		}
 	}
 }
