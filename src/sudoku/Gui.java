@@ -47,7 +47,7 @@ public class Gui extends JFrame implements Observer {
 	private boolean showSingleOccupancy = false;
 	private Celebrate celebtrate = null;
 	private boolean showErrors = false;
-	public static final int CELLSIZE = 100;
+	public static final int CELLSIZE = 80;
 	public Image[] IMAGES;
 	public Image[] PENCILIMAGES;
 	private JPanel sudokuPanel;
@@ -375,8 +375,12 @@ public class Gui extends JFrame implements Observer {
 							}
 						}
 						int val = 0;
-						val = new NumberChooserPanel(Gui.this, possibleValues, Gui.this.getBounds().x + e.getX(),
-								Gui.this.getBounds().y + e.getY()).run();
+						int x = Gui.this.getBounds().x + e.getX();
+						int y = Gui.this.getBounds().y + e.getY();
+						if(y > Gui.this.getBounds().height - CELLSIZE * 3) {
+							y = Gui.this.getBounds().height - CELLSIZE * 3;
+						}
+						val = new NumberChooserPanel(Gui.this, possibleValues, x, y).run();
 						if (possibleValues.contains(val)) {
 							SudokuChecker.addToHistory();
 							SudokuChecker.board[row][col] = val;

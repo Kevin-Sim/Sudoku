@@ -59,8 +59,12 @@ public class NumberChooserPanel extends JDialog {
 					int x = CELLSIZE / 3 + i % 3 * CELLSIZE;
 					int y = 10 + CELLSIZE / 3 + i / 3 * CELLSIZE;
 					if (validValues.contains(i + 1)) {
-						g.drawString("" + (i + 1), x, y);
-						((Graphics2D) g).drawImage(((Gui)parent).IMAGES[i], i % 3 * CELLSIZE + 2, i / 3 * CELLSIZE + 2, null);
+						
+						if(Settings.useImages) {
+							((Graphics2D) g).drawImage(((Gui)parent).IMAGES[i], i % 3 * CELLSIZE + 2, i / 3 * CELLSIZE + 2, null);
+						}else {
+							g.drawString("" + (i + 1), x, y);
+						}
 					}
 				}
 			}
