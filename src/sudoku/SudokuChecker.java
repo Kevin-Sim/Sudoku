@@ -47,34 +47,7 @@ public class SudokuChecker {
 		int target = 20;
 
 		for (int i = 100; i < 1000; i++) {
-			board = generateValidBoard();
-			int bestUnfilledCells = 0;
-			int attemptsWithNoImprov = 0;			
-			while(getUnfilledCells(board) < 81 - target && attemptsWithNoImprov < 5000) {	
-				if(getUnfilledCells(board) > bestUnfilledCells) {
-					bestUnfilledCells = getUnfilledCells(board);
-					//System.out.println(i + "\t" + bestUnfilledCells);
-				}
-				//System.out.println(i + "\t" + bestUnfilledCells + "\t" + attemptsWithNoImprov);
-				int r = 0;
-				int c = 0;
-				int val = 0;
-				while(val == 0) {
-					r = Parameters.rnd.nextInt(9);
-					c = Parameters.rnd.nextInt(9);
-					val = board[r][c];
-				}				
-				board[r][c] = 0;
-				int cellsWithoutGuesses = attemptToSolve();
-				if(cellsWithoutGuesses != 0) {
-					board[r][c] = val;
-					attemptsWithNoImprov++;
-//					board = fillSingles(board);
-				}else {
-					attemptsWithNoImprov = 0;
-				}
-				
-			}
+			board = generateBoard(target);							
 			int cellsWithoutGuesses = attemptToSolve();
 			System.out.println(i + "\t" + (81 - getUnfilledCells(board)) + "\tTarget " + target);
 			if(cellsWithoutGuesses == 0 && getUnfilledCells(board) <= 21) {
@@ -84,8 +57,38 @@ public class SudokuChecker {
 			}			
 		}
 		Gui.main(null);
+}
 		
+	public static int[][] generateBoard(int target) {
+		board = generateValidBoard();
+		int bestUnfilledCells = 0;
+		int attemptsWithNoImprov = 0;	
+		int tolerance = 0;//set to zero
+		while(getUnfilledCells(board) < 81 - target && attemptsWithNoImprov < 100) {	
+			if(getUnfilledCells(board) > bestUnfilledCells) {
+				bestUnfilledCells = getUnfilledCells(board);				
+			}			
+			int r = 0;
+			int c = 0;
+			int val = 0;
+			while(val == 0) {
+				r = Parameters.rnd.nextInt(9);
+				c = Parameters.rnd.nextInt(9);
+				val = board[r][c];
+			}				
+			board[r][c] = 0;
+			int cellsWithoutGuesses = attemptToSolve();
+			if(cellsWithoutGuesses > tolerance) {
+				board[r][c] = val;
+				attemptsWithNoImprov++;
+//				board = fillSingles(board);
+			}else {
+				attemptsWithNoImprov = 0;
+			}
+		}
+		return board;
 	}
+	
 
 	public static boolean isValid(int[][] board) {
 		// Rows

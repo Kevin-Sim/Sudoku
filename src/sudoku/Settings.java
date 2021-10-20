@@ -22,6 +22,11 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.ActionEvent;
 import javax.swing.JLabel;
+import javax.swing.JCheckBox;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 
 public class Settings extends JDialog {
 
@@ -30,6 +35,8 @@ public class Settings extends JDialog {
 	public static Color backColor = new Color(238, 238, 238);
 	public static Color gridColor = Color.BLACK;
 	public static Font font = new Font("Times New Roman", Font.PLAIN, 28);
+	public static boolean useImages = false;
+	public static String imageDir = "img1";
 
 	/**
 	 * Launch the application.
@@ -48,7 +55,11 @@ public class Settings extends JDialog {
 	 */
 	public Settings(JFrame parent) {
 		super(parent, "Settings", true);
-		setBounds(100, 100, 450, 300);
+		if(parent == null) {
+			setBounds(100, 400, 450, 300);
+		}else {
+			setBounds(parent.getBounds().x, parent.getBounds().y + 400, 450, 300);
+		}
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
@@ -66,7 +77,7 @@ public class Settings extends JDialog {
 		lblForegroundColour.setOpaque(true);
 		lblForegroundColour.setBackground(backColor);
 		lblForegroundColour.setForeground(foreColor);
-		lblForegroundColour.setBounds(27, 75, 122, 27);		       
+		lblForegroundColour.setBounds(27, 64, 122, 27);		       
 		lblForegroundColour.setBorder(border);		
 		contentPanel.add(lblForegroundColour);
 		
@@ -81,8 +92,37 @@ public class Settings extends JDialog {
 				}
 			}
 		});
-		btnFont.setBounds(27, 124, 89, 23);
+		btnFont.setBounds(27, 140, 122, 23);
 		contentPanel.add(btnFont);
+		
+		JLabel lblGridColor = new JLabel("Grid Color");
+		lblGridColor.setOpaque(true);
+		lblGridColor.setForeground(Color.white);
+		lblGridColor.setBackground(gridColor);
+		lblGridColor.setBorder(border);	
+		lblGridColor.setBounds(27, 102, 122, 27);
+		contentPanel.add(lblGridColor);
+		
+		JCheckBox chckbxImages = new JCheckBox("Images");
+		chckbxImages.setSelected(useImages);
+		chckbxImages.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				useImages = chckbxImages.isSelected();
+			}
+		});
+		chckbxImages.setBounds(27, 171, 97, 23);
+		contentPanel.add(chckbxImages);
+		
+		SpinnerNumberModel model1 = new SpinnerNumberModel(Integer.parseInt(imageDir.substring(3)), 1, 2, 1);  
+		JSpinner spinner = new JSpinner(model1);
+		spinner.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				int i = (int)spinner.getValue();
+				imageDir = "img" + i;
+			}
+		});
+		spinner.setBounds(149, 172, 40, 20);		
+		contentPanel.add(spinner);
 
 		lblBackgroundColour.addMouseListener(new MouseAdapter() {
         	@Override
@@ -109,6 +149,15 @@ public class Settings extends JDialog {
         	}
 		});
 		
+		lblGridColor.addMouseListener(new MouseAdapter() {
+        	@Override
+        	public void mouseClicked(MouseEvent e) {        		
+        		super.mouseClicked(e);
+        		gridColor = JColorChooser.showDialog(Settings.this, "Grid Color", gridColor);
+        		lblGridColor.setBackground(gridColor);
+        		Settings.this.repaint();
+        	}
+		});
 		JPanel buttonPane = new JPanel();
 		buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
 		getContentPane().add(buttonPane, BorderLayout.SOUTH);

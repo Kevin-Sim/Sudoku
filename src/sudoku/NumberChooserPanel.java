@@ -1,9 +1,11 @@
 package sudoku;
+
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -21,7 +23,7 @@ public class NumberChooserPanel extends JDialog {
 
 	private final JPanel contentPanel;
 
-	private int cellSize = 60;
+	private static final int CELLSIZE = Gui.CELLSIZE;
 
 	private int value;
 
@@ -36,6 +38,7 @@ public class NumberChooserPanel extends JDialog {
 	}
 
 	/**
+	 * 
 	 * Create the dialog.
 	 * 
 	 * @param y
@@ -43,19 +46,21 @@ public class NumberChooserPanel extends JDialog {
 	 */
 	public NumberChooserPanel(Frame parent, HashSet<Integer> validValues, int x, int y) {
 		super(parent, "Enter data", true);
-		setBounds(x, y, cellSize * 3, 25 + cellSize * 3);
+		
+		setBounds(x, y, 15 + CELLSIZE * 3, 40 + CELLSIZE * 3);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel = new JPanel() {
 			@Override
 			public void paint(Graphics g) {
 				// TODO Auto-generated method stub
 				super.paint(g);
-				g.setFont(new Font("TimesRoman", Font.PLAIN, cellSize / 3));
+				g.setFont(new Font("TimesRoman", Font.BOLD, CELLSIZE / 3));
 				for (int i = 0; i < 9; i++) {
-					int x = cellSize / 3 + i % 3 * cellSize;
-					int y = 10 + cellSize / 3 + i / 3 * cellSize;
+					int x = CELLSIZE / 3 + i % 3 * CELLSIZE;
+					int y = 10 + CELLSIZE / 3 + i / 3 * CELLSIZE;
 					if (validValues.contains(i + 1)) {
 						g.drawString("" + (i + 1), x, y);
+						((Graphics2D) g).drawImage(((Gui)parent).IMAGES[i], i % 3 * CELLSIZE + 2, i / 3 * CELLSIZE + 2, null);
 					}
 				}
 			}
@@ -65,8 +70,8 @@ public class NumberChooserPanel extends JDialog {
 		contentPanel.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				int col = e.getX() / cellSize;
-				int row = (e.getY() + 10) / cellSize;
+				int col = e.getX() / CELLSIZE;
+				int row = (e.getY() + 10) / CELLSIZE;
 				value = row * 3 + col + 1;
 //				System.err.println(value);
 				if (validValues.contains(value)) {
@@ -79,7 +84,7 @@ public class NumberChooserPanel extends JDialog {
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		addWindowListener(new WindowAdapter() {
 			@Override
-			public void windowClosed(WindowEvent e) {				
+			public void windowClosed(WindowEvent e) {
 				super.windowClosing(e);
 				value = 0;
 			}
