@@ -13,8 +13,6 @@ import javax.swing.JPanel;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 
-import say.swing.JFontChooser;
-
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -80,20 +78,6 @@ public class Settings extends JDialog {
 		lblForegroundColour.setBounds(27, 64, 122, 27);		       
 		lblForegroundColour.setBorder(border);		
 		contentPanel.add(lblForegroundColour);
-		
-		JButton btnFont = new JButton("Font");
-		btnFont.addActionListener(new ActionListener() {			 
-
-			public void actionPerformed(ActionEvent e) {				
-				JFontChooser.DEFAULT_SELECTED_FONT = font;
-				JFontChooser jfc = new JFontChooser();
-				if(jfc.showDialog(Settings.this) == JFontChooser.OK_OPTION) {
-					font = jfc.getSelectedFont();
-				}
-			}
-		});
-		btnFont.setBounds(27, 140, 122, 23);
-		contentPanel.add(btnFont);
 		
 		JLabel lblGridColor = new JLabel("Grid Color");
 		lblGridColor.setOpaque(true);
