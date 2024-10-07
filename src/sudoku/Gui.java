@@ -34,8 +34,6 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.border.EmptyBorder;
 
-import resources.ResourceLoader;
-
 public class Gui extends JFrame implements Observer {
 
 	private JPanel contentPane;
@@ -69,21 +67,11 @@ public class Gui extends JFrame implements Observer {
 		});
 	}
 
-	private static Image[] getImages(int size) {
-		Image[] images = new Image[9];
-		for (int i = 1; i <= 9; i++) {
-			Image image = ResourceLoader.loadImage("" + i + ".png");
-			image = image.getScaledInstance(size - 6, size - 6, Image.SCALE_SMOOTH);
-			images[i - 1] = image;
-		}
-		return images;
-	}
 
 	/**
 	 * Create the frame.
 	 */
 	public Gui() {
-		loadImages();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(400, 50, 100 + 10 * CELLSIZE, 10 * CELLSIZE);
 		contentPane = new JPanel();
@@ -648,9 +636,6 @@ public class Gui extends JFrame implements Observer {
 			public void actionPerformed(ActionEvent e) {
 				new Settings(Gui.this);
 				sudokuPanel.setBackground(Settings.backColor);
-				if (Settings.useImages) {
-					loadImages();
-				}
 				Gui.this.revalidate();
 				Gui.this.repaint();
 				Gui.this.sudokuPanel.revalidate();
@@ -659,27 +644,6 @@ public class Gui extends JFrame implements Observer {
 		});
 
 		controlPanel.add(btnSettings);
-	}
-
-	private void loadImages() {
-		String dir = Settings.imageDir;
-		IMAGES = getImages(CELLSIZE);
-		PENCILIMAGES = getImages(CELLSIZE / 3);
-
-		//make sure scaled images loaded in getImages have finished scaling 
-		BufferedImage dummy = new BufferedImage(CELLSIZE, CELLSIZE, BufferedImage.TYPE_INT_RGB);
-		Graphics g = dummy.createGraphics();
-		for (Image image : IMAGES) {
-			while (!g.drawImage(image, 0, 0, CELLSIZE, CELLSIZE, null)) {
-
-			}
-		}
-		for (Image image : PENCILIMAGES) {
-			g.drawImage(image, 0, 0, CELLSIZE / 3, CELLSIZE / 3, null);
-			while (!g.drawImage(image, 0, 0, CELLSIZE, CELLSIZE, null)) {
-
-			}
-		}		
 	}
 
 	public JLabel getLblUnfilled() {
